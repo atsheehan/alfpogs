@@ -1,4 +1,4 @@
-OBJECTS = main.o game.o input.o draw.o menu.o grid.o shape.o
+OBJECTS = main.o game.o input.o draw.o menu.o grid.o shape.o timer.o
 OUTPUT = alfpogs
 CFLAGS = -Wall -Werror `sdl-config --cflags`
 SDL_LINKER = `sdl-config --libs` -lSDL_ttf -lSDL_image -lSDL_net
@@ -13,6 +13,7 @@ game.o:
 menu.o:
 grid.o:
 shape.o:
+timer.o: timer.h
 
 $(OUTPUT): $(OBJECTS) 
 	$(CC) $(CFLAGS) -o $(OUTPUT) $(OBJECTS) $(SDL_LINKER)

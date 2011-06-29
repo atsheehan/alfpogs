@@ -6,6 +6,7 @@
 #include "draw.h"
 #include "game.h"
 #include "input.h"
+#include "timer.h"
 
 /* Structure used for initializing subsystems. */
 struct init_system {
@@ -35,12 +36,14 @@ int main(int argc, char *argv[]) {
 
 /* Initializes any subsystems. */
 bool init(void) {
-  const int subsystem_count = 2;
+  const int subsystem_count = 3;
   struct init_system subsystems[subsystem_count];
   subsystems[0].init = draw_init;
   subsystems[0].system_name = "drawing";
   subsystems[1].init = menu_init;
   subsystems[1].system_name = "menu";
+  subsystems[2].init = timer_init;
+  subsystems[2].system_name = "timer";
 
   int i;
   for (i = 0; i < subsystem_count; ++i) {
@@ -55,5 +58,6 @@ bool init(void) {
 
 /* Cleans up any resources from the various subsystems. */
 void cleanup(void) {
+  timer_cleanup();
   draw_cleanup();
 }

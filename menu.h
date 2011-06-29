@@ -6,9 +6,9 @@
 
 /* A menu_entry represents a single listing within a menu. */
 struct menu_entry {
-  const char *name;		/* The name to display in the menu. */
-  char *content; /* Additional content to display alongside the name. */
-  void (*input_handler)(SDLKey, char *); /* How to handle input when this entry is highlighted. */
+  const char	*name;		/* The name to display in the menu. */
+  char		*content;	/* Additional content to display alongside the name. */
+  void (*input_handler)(SDLKey, char *);	/* How to handle input when this entry is highlighted. */
 };
 
 /* A menu is a collection of menu entries in a certain order. */

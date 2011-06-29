@@ -2,15 +2,18 @@
 #include "draw.h"
 #include "input.h"
 #include "menu.h"
+#include "timer.h"
 #include "SDL.h"
+#include "SDL_thread.h"
 
 /* The main game loop. Coordinates drawing to the screen, handling
    user input, and performing any other game logic. Runs in a loop
    until the game state is about to exit. */
 void game_loop(void) {
-  Uint32 last_frame_ticks = 0;
-  Uint32 ticks_per_frame = 1000 / FRAMES_PER_SECOND;
   game_state = MENU;
+
+  SDL_mutex *mutex = SDL_CreateMutex();
+  SDL_mutexP(mutex);
 
   struct grid grid;
   grid_init(&grid, 1);
@@ -33,7 +36,8 @@ void game_loop(void) {
       break;
     }
 
-    while (SDL_GetTicks() < last_frame_ticks + ticks_per_frame);
-    last_frame_ticks = SDL_GetTicks();
+    timer_wait_for_next_frame(mutex);
   }
+
+  SDL_DestroyMutex(mutex);
 }

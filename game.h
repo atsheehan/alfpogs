@@ -3,8 +3,6 @@
 
 #include <stdbool.h>
 
-#define FRAMES_PER_SECOND 60
-
 enum state {
   MENU,
   PLAYING,
