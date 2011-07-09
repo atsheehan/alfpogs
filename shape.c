@@ -1,6 +1,6 @@
 #include "shape.h"
 
-static int shapes[SHAPES * ROTATIONS * SHAPE_ROWS * SHAPE_COLUMNS] = {
+static char shapes[SHAPES * ROTATIONS * SHAPE_ROWS * SHAPE_COLUMNS] = {
   /* Block shape */
   0, 1, 1, 0,
   0, 1, 1, 0,
@@ -151,7 +151,7 @@ static int shapes[SHAPES * ROTATIONS * SHAPE_ROWS * SHAPE_COLUMNS] = {
 
 
 /* Returns the value of the shape at the given coordinates. */
-int shape_get_value(int shape, int rotation, int row, int col) {
+char shape_get_value(int shape, int rotation, int row, int col) {
   int shape_index = shape * SHAPE_ROWS * SHAPE_COLUMNS * ROTATIONS;
   int rotation_index = rotation * SHAPE_COLUMNS * SHAPE_ROWS;
   int row_index = row * SHAPE_COLUMNS;
@@ -170,7 +170,7 @@ void shape_fill_grid(int shape, int *grid) {
   }
 }
 
-int *shape_get_grid(int index) {
+char *shape_get_grid(int index) {
   int array_index = (index * ROTATIONS * SHAPE_SIZE);
   return (shapes + array_index);
 }

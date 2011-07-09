@@ -3,7 +3,6 @@
 
 #include <stdbool.h>
 
-#define MAX_PLAYER_COUNT 2
 #define GRID_ROWS 20
 #define GRID_COLUMNS 10
 #define GRID_SIZE GRID_ROWS * GRID_COLUMNS
@@ -17,7 +16,7 @@
 
 /* Maintains information for one player's grid. */
 struct grid {
-  int blocks[GRID_SIZE];
+  char blocks[GRID_SIZE];
   int level;
   int lines_to_level;
   int lines_cleared;
@@ -31,13 +30,13 @@ struct grid {
   bool game_over;
   int drop_delay;
   int drop_counter;
-  int animation_index;
   int animation_counter;
+  int animation_index;
 };
 
 bool grid_init(struct grid *grid, int level);
 void grid_update(struct grid *grid);
-int grid_get_block_value(struct grid *grid, int row, int col);
+char grid_get_block_value(struct grid *grid, int row, int col);
 void grid_sweep_broken_lines(struct grid *grid);
 void grid_move_shape_left(struct grid *grid);
 void grid_move_shape_right(struct grid *grid);

@@ -1,22 +1,22 @@
 #ifndef DRAW_H
 #define DRAW_H
 
-#include <stdbool.h>
-#include "menu.h"
-#include "grid.h"
 #include "SDL.h"
+#include "instance.h"
+#include <stdbool.h>
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
-#define BIT_DEPTH 32
 
-/* This surface represents the user's display. */
-SDL_Surface *screen;
+struct display_data {
+  SDL_Surface *screen;
+  SDL_Surface **images;
+  Uint32 black;
+};
 
-bool draw_init(void);
-void draw_cleanup(void);
+bool draw_init(struct display_data *data);
+void draw_cleanup(struct display_data *data);
 
-void draw_menu(struct menu *menu);
-void draw_game(struct grid *grid);
+void draw_game(struct instance *instance, struct display_data *display_data);
 
 #endif /* DRAW_H */

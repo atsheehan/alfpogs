@@ -1,43 +1,27 @@
+#include <stdbool.h>
 #include "game.h"
 #include "draw.h"
 #include "input.h"
-#include "menu.h"
-#include "timer.h"
 #include "SDL.h"
 #include "SDL_thread.h"
 
-/* The main game loop. Coordinates drawing to the screen, handling
-   user input, and performing any other game logic. Runs in a loop
-   until the game state is about to exit. */
-void game_loop(void) {
-  game_state = MENU;
+void game_loop(SDL_cond *sync_condition, struct instance *instance) {
+
+  struct display_data display_data;
+  draw_init(&display_data);
 
   SDL_mutex *mutex = SDL_CreateMutex();
   SDL_mutexP(mutex);
 
-  struct grid grid;
-  grid_init(&grid, 1);
+  while (!instance->quit) {
+    input_game(instance);
+    draw_game(instance, &display_data);
+    instance_update(instance);
 
-  while (game_state != EXITING) {
-    switch (game_state) {
-    case MENU:
-      input_menu();
-      draw_menu(menu_get_current());
-      break;
-
-    case PLAYING:
-      input_game(&grid);
-      draw_game(&grid);
-      grid_update(&grid);
-      break;
-
-    default:
-      game_state = EXITING;
-      break;
-    }
-
-    timer_wait_for_next_frame(mutex);
+    SDL_CondWait(sync_condition, mutex);
   }
+
+  draw_cleanup(&display_data);
 
   SDL_DestroyMutex(mutex);
 }

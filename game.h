@@ -1,18 +1,10 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <stdbool.h>
+#include "instance.h"
 
-enum state {
-  MENU,
-  PLAYING,
-  EXITING,
-};
+#include "SDL.h"
 
-/* Used to determine what part of the game the program is
-   running. */
-enum state game_state;
-
-void game_loop(void);
+void game_loop(SDL_cond *sync_condition, struct instance *instance);
 
 #endif /* GAME_H */

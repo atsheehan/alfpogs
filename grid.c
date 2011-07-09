@@ -1,15 +1,14 @@
 #include <stdlib.h>
-#include <assert.h>
 #include "grid.h"
 #include "shape.h"
 
 #define POINTS_PER_LINE 10
 #define LINES_PER_LEVEL 20
-#define TICKS_PER_FRAME 3
+#define TICKS_PER_FRAME 1
 
 #define NO_ACTIVE_SHAPE -1
-#define BASE_DROP_DELAY 10
-#define DELAY_INCREMENTS 2
+#define BASE_DROP_DELAY 5
+#define DELAY_INCREMENTS 1
 
 static bool grid_is_row_full(struct grid *grid, int row_index);
 static void grid_mark_row_broken(struct grid *grid, int row_index);
@@ -55,8 +54,8 @@ bool grid_init(struct grid *grid, int level) {
 }
 
 /* Gets the value of the block at the given row and column. */
-int grid_get_block_value(struct grid *grid, int row, int col) {
-  int block_value = grid->blocks[row * GRID_COLUMNS + col];
+char grid_get_block_value(struct grid *grid, int row, int col) {
+  char block_value = grid->blocks[row * GRID_COLUMNS + col];
 
   /* Check to see if the current row/col is part of the active shape. Only
      check if the block is empty and there is still an active shape on the
