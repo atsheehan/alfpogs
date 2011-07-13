@@ -2,6 +2,7 @@
 #define NET_H
 
 #include "SDL_net.h"
+#include "grid.h"
 #include <stdbool.h>
 
 #define PACKET_BUFFER_SIZE 1000
@@ -44,6 +45,10 @@ enum input_event {
 
 bool net_init(struct net_info *net_info, const char *hostname, int port);
 void net_destroy(struct net_info *net_info);
+
+bool net_prepare_grid_update_buffer(char *buffer, int *buffer_size, struct grid *grids, int num_players);
+bool net_parse_grid_update_buffer(char *buffer, int buffer_size, struct grid *grids, int num_players);
+
 
 #endif /* NET_H */
 

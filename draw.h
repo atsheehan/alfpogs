@@ -2,6 +2,7 @@
 #define DRAW_H
 
 #include "SDL.h"
+#include "SDL_ttf.h"
 #include "instance.h"
 #include <stdbool.h>
 
@@ -12,6 +13,9 @@ struct display_data {
   SDL_Surface *screen;
   SDL_Surface **images;
   Uint32 black;
+  SDL_Color white;
+  TTF_Font *font;
+  char text_buffer[50];
 };
 
 bool draw_init(struct display_data *data);

@@ -5,6 +5,8 @@
 #include "grid.h"
 #include "net.h"
 
+#define MAX_NUM_PLAYERS 2
+
 enum instance_type {
   SINGLE_PLAYER,
   MULTI_PLAYER
@@ -21,7 +23,7 @@ struct instance {
   bool quit;
 
   struct net_info *net_info;
-  struct grid **grids;
+  struct grid *grids;
   int *starting_levels;
 };
 

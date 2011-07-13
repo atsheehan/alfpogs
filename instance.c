@@ -12,7 +12,7 @@ void instance_update(struct instance *instance) {
   if (instance->type == SINGLE_PLAYER) {
 
     for (i = 0; i < instance->num_players; i++) {
-      grid_update(instance->grids[i]);
+      grid_update(&instance->grids[i]);
     }
 
   } else {
@@ -47,11 +47,9 @@ void instance_update(struct instance *instance) {
 	printf("received a GRID_UPDATE_ID packet\n");
 	net->state = RUNNING;
 
-	if (net->packet->len >= 401) {
-	  memcpy(instance->grids[0]->blocks, &net->packet->data[1], 200);
-	  memcpy(instance->grids[1]->blocks, &net->packet->data[201], 200);
+	if (!net_parse_grid_update_buffer((char *)net->packet->data, net->packet->len, instance->grids, instance->num_players)) {
+	  fprintf(stderr, "unable to parse grid update packet\n");
 	}
-
 	break;
 
       default:

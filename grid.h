@@ -16,14 +16,14 @@
 
 /* Maintains information for one player's grid. */
 struct grid {
-  char blocks[GRID_SIZE];
-  int level;
+  unsigned char blocks[GRID_SIZE];
+  char level;
   int lines_to_level;
   int lines_cleared;
   int score;
   bool contains_broken_lines;
-  int next_shape_index;
-  int shape_index;
+  char next_shape_index;
+  char shape_index;
   int shape_row;
   int shape_col;
   int shape_rotation;
@@ -34,9 +34,9 @@ struct grid {
   int animation_index;
 };
 
-bool grid_init(struct grid *grid, int level);
+bool grid_init(struct grid *grid, char level, bool empty);
 void grid_update(struct grid *grid);
-char grid_get_block_value(struct grid *grid, int row, int col);
+unsigned char grid_get_block_value(struct grid *grid, int row, int col);
 void grid_sweep_broken_lines(struct grid *grid);
 void grid_move_shape_left(struct grid *grid);
 void grid_move_shape_right(struct grid *grid);

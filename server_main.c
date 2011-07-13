@@ -10,10 +10,11 @@
 #include "net.h"
 #include "grid.h"
 #include "list.h"
+#include "instance.h"
 #include "SDL.h"
 #include "SDL_thread.h"
 
-#define MAX_BUFFER_SIZE 500
+#define MAX_BUFFER_SIZE 1000
 
 struct connection {
   struct sockaddr_in address;
@@ -194,20 +195,28 @@ void *new_instance_func(void *_params) {
   struct new_instance_params *params = (struct new_instance_params *)_params;
   printf("in instance func\n");
 
-  struct grid grid[params->num_players];
-  int i;
+  if (params->num_players < 1 || params->num_players > MAX_NUM_PLAYERS) {
+    fprintf(stderr, "new_instance_func: invalid number of players (%d). min: 1, max: %d\n", params->num_players, MAX_NUM_PLAYERS);
+    return 0;
+  }
+  
+  struct grid *grids = malloc(sizeof(struct grid) * params->num_players);
+  if (grids == NULL) {
+    fprintf(stderr, "new_instance_func: could not allocate grids, out of memory\n");
+    return 0;
+  }
 
+  int i;
   for (i = 0; i < params->num_players; i++) {
-    grid_init(&grid[i], 1);
+    grid_init(&grids[i], 1, false);
   }
 
   SDL_mutex *mutex = SDL_CreateMutex();
   SDL_mutexP(mutex);
 
   char buffer[MAX_BUFFER_SIZE];
-  int row, col;
 
-  int update_frequency = 2;
+  int update_frequency = 1;
   int update_counter = 0;
 
   int num_disconnected = 0;
@@ -225,63 +234,57 @@ void *new_instance_func(void *_params) {
       struct connection *connection = params->connections[i];
 
       if (connection->has_left) {
-	num_disconnected++;
-	continue;
+  	num_disconnected++;
+  	continue;
       }
 
       if (connection->event != NULL_ID) {
-	switch (connection->event) {
-	case MOVE_LEFT_ID:
-	  grid_move_shape_left(&grid[i]);
-	  break;
+  	switch (connection->event) {
+  	case MOVE_LEFT_ID:
+  	  grid_move_shape_left(&grids[i]);
+  	  break;
 
-	case MOVE_RIGHT_ID:
-	  grid_move_shape_right(&grid[i]);
-	  break;
+  	case MOVE_RIGHT_ID:
+  	  grid_move_shape_right(&grids[i]);
+  	  break;
 
-	case MOVE_DOWN_ID:
-	  grid_move_shape_down(&grid[i]);
-	  break;
+  	case MOVE_DOWN_ID:
+  	  grid_move_shape_down(&grids[i]);
+  	  break;
 
-	case DROP_ID:
-	  grid_drop_shape(&grid[i]);
-	  break;
+  	case DROP_ID:
+  	  grid_drop_shape(&grids[i]);
+  	  break;
 
-	case ROTATE_ID:
-	  grid_rotate_shape(&grid[i]);
-	  break;
-	}
-	connection->event = NULL_ID;
+  	case ROTATE_ID:
+  	  grid_rotate_shape(&grids[i]);
+  	  break;
+  	}
+  	connection->event = NULL_ID;
       }
 
-      grid_update(&grid[i]);
+      grid_update(&grids[i]);
     }
 
 
     if (update_counter >= update_frequency) {
+      int buffer_size = MAX_BUFFER_SIZE;
+      if (net_prepare_grid_update_buffer(buffer, &buffer_size, grids, params->num_players)) {
 
-      buffer[0] = GRID_UPDATE_ID;
-      int index = 1;
-      for (i = 0; i < params->num_players; i++) {
-	for (row = 0; row < GRID_ROWS; row++) {
-	  for (col = 0; col < GRID_COLUMNS; col++, index++) {
-	    buffer[index] = grid_get_block_value(&grid[i], row, col);
-	  }
-	}
-      }
-
-      for (i = 0; i < params->num_players; i++) {
-	int bytes_sent = sendto(params->sd, buffer, 401, 0, (struct sockaddr *)&params->connections[i]->address, sizeof(struct sockaddr_in));
-	if (bytes_sent == -1) {
-	  printf("error sending packet\n");
-	}
+  	for (i = 0; i < params->num_players; i++) {
+  	  int bytes_sent = sendto(params->sd, buffer, buffer_size, 0, (struct sockaddr *)&params->connections[i]->address, sizeof(struct sockaddr_in));
+  	  if (bytes_sent == -1) {
+  	    printf("error sending packet\n");
+  	  }
+  	}
+      } else {
+  	fprintf(stderr, "error preparing the GRID_UPDATE_PACKET\n");
       }
 
       update_counter = 0;
     } else {
       update_counter++;
     }
-
   }
   
   printf("exiting func\n");

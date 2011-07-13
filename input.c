@@ -15,7 +15,7 @@ void input_game(struct instance *instance) {
     case SDL_KEYDOWN:
       switch (event.key.keysym.sym) {
       case SDLK_LEFT:
-	grid_move_shape_left(instance->grids[instance->player_index]);
+	grid_move_shape_left(&instance->grids[instance->player_index]);
 
 	if (instance->type == MULTI_PLAYER) {
 	  instance->net_info->packet->len = 2;
@@ -27,7 +27,7 @@ void input_game(struct instance *instance) {
 	}
 	break;
       case SDLK_RIGHT:
-	grid_move_shape_right(instance->grids[instance->player_index]);
+	grid_move_shape_right(&instance->grids[instance->player_index]);
 	if (instance->type == MULTI_PLAYER) {
 	  instance->net_info->packet->len = 2;
 	  instance->net_info->packet->data[0] = USER_INPUT_ID;
@@ -38,7 +38,7 @@ void input_game(struct instance *instance) {
 	}
 	break;
       case SDLK_DOWN:
-	grid_move_shape_down(instance->grids[instance->player_index]);
+	grid_move_shape_down(&instance->grids[instance->player_index]);
 	if (instance->type == MULTI_PLAYER) {
 	  instance->net_info->packet->len = 2;
 	  instance->net_info->packet->data[0] = USER_INPUT_ID;
@@ -49,7 +49,7 @@ void input_game(struct instance *instance) {
 	}
 	break;
       case SDLK_SPACE:
-	grid_rotate_shape(instance->grids[instance->player_index]);
+	grid_rotate_shape(&instance->grids[instance->player_index]);
 	if (instance->type == MULTI_PLAYER) {
 	  instance->net_info->packet->len = 2;
 	  instance->net_info->packet->data[0] = USER_INPUT_ID;
@@ -60,7 +60,7 @@ void input_game(struct instance *instance) {
 	}
 	break;
       case SDLK_UP:
-	grid_drop_shape(instance->grids[instance->player_index]);
+	grid_drop_shape(&instance->grids[instance->player_index]);
 	if (instance->type == MULTI_PLAYER) {
 	  instance->net_info->packet->len = 2;
 	  instance->net_info->packet->data[0] = USER_INPUT_ID;

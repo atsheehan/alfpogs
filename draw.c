@@ -1,16 +1,14 @@
 #include <stdlib.h>
 #include <string.h>
-
 #include "draw.h"
 #include "grid.h"
 #include "shape.h"
 #include "instance.h"
 #include "images.h"
 #include "SDL_image.h"
+#include "SDL_ttf.h"
 
 #define BLOCK_SIZE 20
-#define NEXT_SHAPE_DISPLAY_X 490
-#define NEXT_SHAPE_DISPLAY_Y 150
 
 #define P1_G1_GRID_TOP 40
 #define P1_G1_GRID_LEFT 220
@@ -21,12 +19,49 @@
 #define P2_G2_GRID_TOP 40
 #define P2_G2_GRID_LEFT 325
 
+#define P1_G1_NEXT_TOP 150
+#define P1_G1_NEXT_LEFT 490
+
+#define P1_G2_NEXT_TOP 50
+#define P1_G2_NEXT_LEFT 15
+
+#define P2_G2_NEXT_TOP 50
+#define P2_G2_NEXT_LEFT 545
+
+#define P1_G1_SCORE_TOP 150 // TODO
+#define P1_G1_SCORE_LEFT 490 // TODO
+
+#define P1_G2_SCORE_TOP 170
+#define P1_G2_SCORE_LEFT 15
+
+#define P2_G2_SCORE_TOP 170
+#define P2_G2_SCORE_LEFT 545
+
+#define P1_G1_LEVEL_TOP 150 // TODO
+#define P1_G1_LEVEL_LEFT 490 // TODO
+
+#define P1_G2_LEVEL_TOP 240
+#define P1_G2_LEVEL_LEFT 15
+
+#define P2_G2_LEVEL_TOP 240
+#define P2_G2_LEVEL_LEFT 545
+
+#define P1_G1_LINES_TOP 150 // tODO
+#define P1_G1_LINES_LEFT 490 // TODO
+
+#define P1_G2_LINES_TOP 310
+#define P1_G2_LINES_LEFT 15
+
+#define P2_G2_LINES_TOP 310
+#define P2_G2_LINES_LEFT 545
 
 #define MASTER_IMAGE_FILENAME "images.png"
 
-/* static void draw_next_shape(int next_shape_index); */
-SDL_Surface *get_block_surface(SDL_Surface **images, int value, int animation_index);
+
+SDL_Surface *get_block_surface(SDL_Surface **images, unsigned char value, int animation_index);
 void draw_grid(struct display_data *display, struct grid *instance, int start_x, int start_y);
+void draw_next_shape(struct display_data *display, unsigned char next_shape_index, int start_x, int start_y);
+void draw_text(struct display_data *display, const char *text, int start_x, int start_y, SDL_Color color);
 
 bool draw_init(struct display_data *data) {
 
@@ -43,12 +78,28 @@ bool draw_init(struct display_data *data) {
   }
 
   data->black = SDL_MapRGB(data->screen->format, 0, 0, 0);
+  data->white.r = 255;
+  data->white.g = 255;
+  data->white.b = 255;
+
+  data->font = TTF_OpenFont("font.ttf", 26);
+  if (data->font == NULL) {
+    fprintf(stderr, "could not load font\n");
+    return false;
+  }
+
   return true;
 }
 
 /* Clean up any resources used by the drawing subsystem. */
 void draw_cleanup(struct display_data *data) {
-  images_free(data->images, NUMBER_OF_IMAGES);
+  if (data->font != NULL) {
+    TTF_CloseFont(data->font);
+  }
+
+  if (data->images != NULL) {
+    images_free(data->images, NUMBER_OF_IMAGES);
+  }
 }
 
 
@@ -63,60 +114,75 @@ void draw_game(struct instance *instance, struct display_data *display) {
   }
 
   SDL_FillRect(display->screen, NULL, display->black);
-
   SDL_BlitSurface(background, NULL, display->screen, NULL);
 
   if (instance->num_players == 1) {
-    draw_grid(display, instance->grids[0], P1_G1_GRID_LEFT, P1_G1_GRID_TOP);
+    draw_grid(display, &instance->grids[0], P1_G1_GRID_LEFT, P1_G1_GRID_TOP);
+    draw_next_shape(display, instance->grids[0].next_shape_index, P1_G1_NEXT_LEFT, P1_G1_NEXT_TOP);
+
+    draw_text(display, "score", P1_G1_SCORE_LEFT, P1_G1_SCORE_TOP, display->white);
+    draw_text(display, "level", P1_G1_LEVEL_LEFT, P1_G1_LEVEL_TOP, display->white);
+    draw_text(display, "lines", P1_G1_LINES_LEFT, P1_G1_LINES_TOP, display->white);
+
   } else {
-    draw_grid(display, instance->grids[0], P1_G2_GRID_LEFT, P1_G2_GRID_TOP);
-    draw_grid(display, instance->grids[1], P2_G2_GRID_LEFT, P2_G2_GRID_TOP);
+    draw_grid(display, &instance->grids[0], P1_G2_GRID_LEFT, P1_G2_GRID_TOP);
+    draw_grid(display, &instance->grids[1], P2_G2_GRID_LEFT, P2_G2_GRID_TOP);
+
+    draw_next_shape(display, instance->grids[0].next_shape_index, P1_G2_NEXT_LEFT, P1_G2_NEXT_TOP);
+    draw_next_shape(display, instance->grids[1].next_shape_index, P2_G2_NEXT_LEFT, P2_G2_NEXT_TOP);
+
+    sprintf(display->text_buffer, "%.7d", instance->grids[0].score);
+    draw_text(display, display->text_buffer, P1_G2_SCORE_LEFT, P1_G2_SCORE_TOP, display->white);
+    sprintf(display->text_buffer, "%.7d", instance->grids[1].score);
+    draw_text(display, display->text_buffer, P2_G2_SCORE_LEFT, P2_G2_SCORE_TOP, display->white);
+
+    sprintf(display->text_buffer, "%.7d", instance->grids[0].lines_cleared);
+    draw_text(display, display->text_buffer, P1_G2_LEVEL_LEFT, P1_G2_LEVEL_TOP, display->white);
+    sprintf(display->text_buffer, "%.7d", instance->grids[1].lines_cleared);
+    draw_text(display, display->text_buffer, P2_G2_LEVEL_LEFT, P2_G2_LEVEL_TOP, display->white);
+
+    sprintf(display->text_buffer, "%.2d", instance->grids[0].level);
+    draw_text(display, display->text_buffer, P1_G2_LINES_LEFT, P1_G2_LINES_TOP, display->white);
+    sprintf(display->text_buffer, "%.2d", instance->grids[1].level);
+    draw_text(display, display->text_buffer, P2_G2_LINES_LEFT, P2_G2_LINES_TOP, display->white);
   }
-
-  /* draw_next_shape(instance_get_next_shape_index()); */
-  /* sprintf(buffer, "%.7d", instance_get_score()); */
-  /* draw_text(buffer, 60, 75, basic_font); */
-  /* sprintf(buffer, "%.2d", instance_get_level()); */
-  /* draw_text(buffer, 95, 165, basic_font); */
-  /* sprintf(buffer, "%.7d", instance_get_lines_cleared());  */
-  /* draw_text(buffer, 60, 255, basic_font); */
-
-  /* char *message = instance_get_message(); */
-  /* if (message != NULL) { */
-  /*   strncpy(buffer, message, 50 - 1); */
-  /*   buffer[49] = 0; */
-  /*   draw_text(buffer, 0, 0, basic_font); */
-  /* } */
 
   SDL_Flip(display->screen);
 }
 
-/* static void draw_next_shape(int next_shape_index) { */
-/*   int i, j, row_index, grid_value; */
-/*   SDL_Surface *color_block; */
+void draw_next_shape(struct display_data *display, unsigned char next_shape_index, int start_x, int start_y) {
 
-/*   SDL_Rect block; */
-/*   block.w = block.h = BLOCK_SIZE; */
+  if (next_shape_index >= SHAPES) {
+    return;
+  }
 
-/*   int *shape_array = shape_get_grid(next_shape_index); */
-/*   for (i = 0; i < SHAPE_ROWS; ++i) { */
-/*     row_index = i * SHAPE_COLUMNS; */
+  SDL_Rect block;
+  int row, col;
+  unsigned char grid_value;
+  SDL_Surface *color_block;
 
-/*     for (j = 0; j < SHAPE_COLUMNS; ++j) { */
-/*       grid_value = shape_array[row_index + j]; */
-/*       if (grid_value > 0) { */
-/*   	block.x = NEXT_SHAPE_DISPLAY_X + (j * BLOCK_SIZE); */
-/*   	block.y = NEXT_SHAPE_DISPLAY_Y + (i * BLOCK_SIZE); */
-/*   	color_block = get_color(grid_value, 0); */
-/*   	SDL_BlitSurface(color_block, NULL, screen, &block); */
-/*       } */
-/*     } */
-/*   } */
-/* } */
+  block.w = block.h = BLOCK_SIZE;
+
+  unsigned char *shape_array = shape_get_grid(next_shape_index);
+
+  for (row = 0; row < SHAPE_ROWS; ++row) {
+    for (col = 0; col < SHAPE_COLUMNS; ++col) {
+
+      grid_value = shape_array[row * SHAPE_COLUMNS + col];
+      if (grid_value > 0) {
+  	block.x = start_x + (col * BLOCK_SIZE);
+  	block.y = start_y + (row * BLOCK_SIZE);
+  	color_block = get_block_surface(display->images, grid_value, 0);
+  	SDL_BlitSurface(color_block, NULL, display->screen, &block);
+      }
+    }
+  }
+}
 
 void draw_grid(struct display_data *display, struct grid *grid, int start_x, int start_y) {
   SDL_Rect block;
-  int row, col, grid_value;
+  int row, col;
+  unsigned char grid_value;
   SDL_Surface *color_block;
 
   //int animation_index = instance_get_animation_index();
@@ -140,7 +206,7 @@ void draw_grid(struct display_data *display, struct grid *grid, int start_x, int
   }
 }
 
-SDL_Surface *get_block_surface(SDL_Surface **images, int value, int animation_index) {
+SDL_Surface *get_block_surface(SDL_Surface **images, unsigned char value, int animation_index) {
   switch (value) {
   case 1:
     return images[PURPLE_BLOCK];
@@ -163,4 +229,21 @@ SDL_Surface *get_block_surface(SDL_Surface **images, int value, int animation_in
   default:
     return NULL;
   }
+}
+
+void draw_text(struct display_data *display, const char *text, int start_x, int start_y, SDL_Color color) {
+
+  SDL_Surface *text_surface = TTF_RenderText_Solid(display->font, text, color);
+  if (text_surface == NULL) {
+    return;
+  }
+
+  SDL_Rect dest_rect;
+  dest_rect.x = start_x;
+  dest_rect.y = start_y;
+  dest_rect.h = text_surface->h;
+  dest_rect.w = text_surface->w;
+
+  SDL_BlitSurface(text_surface, NULL, display->screen, &dest_rect);
+  SDL_FreeSurface(text_surface);
 }

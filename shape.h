@@ -7,8 +7,8 @@
 #define SHAPE_COLUMNS 4
 #define SHAPE_SIZE SHAPE_ROWS * SHAPE_COLUMNS
 
-char shape_get_value(int shape, int rotation, int row, int col);
-void shape_fill_grid(int shape, int *grid);
-char *shape_get_grid(int index);
+unsigned char shape_get_value(int shape, int rotation, int row, int col);
+void shape_fill_grid(int shape, unsigned char *grid);
+unsigned char *shape_get_grid(int index);
 
 #endif /* SHAPE_H */

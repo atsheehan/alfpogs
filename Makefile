@@ -1,8 +1,8 @@
 ALL_HEADERS = game.h input.h grid.h images.h draw.h net.h shape.h instance.h list.h
 CC = gcc
-CFLAGS = -Wall -Werror `sdl-config --cflags`
+CFLAGS = -Wall `sdl-config --cflags`
 OBJECTS = game.o input.o list.o draw.o grid.o shape.o instance.o images.o net.o
-SDL_LINKER = `sdl-config --libs` -lSDL_image -lSDL_net
+SDL_LINKER = `sdl-config --libs` -lSDL_image -lSDL_net -lSDL_ttf
 
 CLIENT_OBJECTS = main.o $(OBJECTS)
 CLIENT_OUTPUT = alfpogs

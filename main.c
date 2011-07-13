@@ -1,10 +1,10 @@
 #include <stdio.h>
-
 #include "game.h"
 #include "instance.h"
 #include "net.h"
 #include "SDL.h"
 #include "SDL_net.h"
+#include "SDL_ttf.h"
 
 Uint32 sync_framerate_func(Uint32 interval, void *_condition);
 
@@ -20,16 +20,15 @@ int main() {
     fprintf(stderr, "SDLNet_Init: %s\n", SDLNet_GetError());
     exit(1);
   }
-  
-  // parse args
-  struct grid player_one_grid;
-  struct grid player_two_grid;
-  grid_init(&player_one_grid, 1);
-  grid_init(&player_two_grid, 1);
 
-  struct grid *grids[2];
-  grids[0] = &player_one_grid;
-  grids[1] = &player_two_grid;
+  if (TTF_Init() == -1) {
+    fprintf(stderr, "TTF_Init: %s\n", TTF_GetError());
+    exit(1);
+  }
+
+  struct grid grids[2];
+  grid_init(&grids[0], 1, true);
+  grid_init(&grids[1], 1, true);
 
   int starting_levels[1];
   starting_levels[0] = 1;
@@ -62,6 +61,7 @@ int main() {
   SDL_RemoveTimer(timer_id);
   SDL_DestroyCond(sync_condition);
 
+  TTF_Quit();
   SDLNet_Quit();
   SDL_Quit();
 

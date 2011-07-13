@@ -15,10 +15,10 @@ static void grid_mark_row_broken(struct grid *grid, int row_index);
 static bool grid_is_shape_overlapping(struct grid *grid);
 static void grid_affix_shape(struct grid *grid);
 static void grid_set_game_over(struct grid *grid);
-static int grid_calculate_drop_delay(int current_level);
+static int grid_calculate_drop_delay(char current_level);
 
 /* Initializes a new grid. Returns true for success, false on failure. */
-bool grid_init(struct grid *grid, int level) {
+bool grid_init(struct grid *grid, char level, bool empty) {
 
   /* Set the entire grid to blanks. */
   int i;
@@ -38,7 +38,6 @@ bool grid_init(struct grid *grid, int level) {
   grid->lines_to_level = LINES_PER_LEVEL;
   grid->lines_cleared = 0;
   grid->score = 0;
-  grid->next_shape_index = rand() % SHAPES;
   grid->shape_index = NO_ACTIVE_SHAPE;
   grid->shape_row = 0;
   grid->shape_col = 0;
@@ -50,12 +49,18 @@ bool grid_init(struct grid *grid, int level) {
   grid->animation_index = 0;
   grid->animation_counter = 0;
 
+  if (empty) {
+    grid->next_shape_index = NO_ACTIVE_SHAPE;
+  } else {
+    grid->next_shape_index = rand() % SHAPES;
+  }
+
   return true;
 }
 
 /* Gets the value of the block at the given row and column. */
-char grid_get_block_value(struct grid *grid, int row, int col) {
-  char block_value = grid->blocks[row * GRID_COLUMNS + col];
+unsigned char grid_get_block_value(struct grid *grid, int row, int col) {
+  unsigned char block_value = grid->blocks[row * GRID_COLUMNS + col];
 
   /* Check to see if the current row/col is part of the active shape. Only
      check if the block is empty and there is still an active shape on the
@@ -328,6 +333,6 @@ static void grid_set_game_over(struct grid *grid) {
 }
 
 /* Determines how long it should take for the shape to drop. */
-static int grid_calculate_drop_delay(int current_level) {
+static int grid_calculate_drop_delay(char current_level) {
   return BASE_DROP_DELAY + (MAX_LEVEL - current_level) * DELAY_INCREMENTS;
 }
