@@ -142,8 +142,17 @@ int main() {
       list_insert(connection_list, new_connection);
       sem_post(&connection_list_sem);
 
+
+      int bytes_sent;
+      send_buffer[0] = MESSAGE_ID;
+      sprintf(&send_buffer[1], "joined game, waiting for other player...");
+      bytes_sent = sendto(sd, send_buffer, strlen(send_buffer) + 1, 0, (struct sockaddr *)&client_address, sizeof(struct sockaddr_in));
+      if (bytes_sent == -1) {
+	printf("error sending message packet\n");
+      }
+
       send_buffer[0] = JOINED_GAME_ID;
-      int bytes_sent = sendto(sd, send_buffer, 1, 0, (struct sockaddr *)&client_address, sizeof(struct sockaddr_in));
+      bytes_sent = sendto(sd, send_buffer, 1, 0, (struct sockaddr *)&client_address, sizeof(struct sockaddr_in));
       if (bytes_sent == -1) {
 	printf("error sending JOINED_GAME packet\n");
       }
@@ -206,15 +215,23 @@ void *new_instance_func(void *_params) {
     return 0;
   }
 
+  char buffer[MAX_BUFFER_SIZE];
   int i;
   for (i = 0; i < params->num_players; i++) {
     grid_init(&grids[i], 1, false);
+
+      buffer[0] = MESSAGE_ID;
+      sprintf(&buffer[1], "starting game");
+      int bytes_sent = sendto(params->sd, buffer, strlen(buffer) + 1, 0, (struct sockaddr *)&params->connections[i]->address, sizeof(struct sockaddr_in));
+      if (bytes_sent == -1) {
+	printf("error sending message packet\n");
+      }
   }
 
   SDL_mutex *mutex = SDL_CreateMutex();
   SDL_mutexP(mutex);
 
-  char buffer[MAX_BUFFER_SIZE];
+
 
   int update_frequency = 1;
   int update_counter = 0;

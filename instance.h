@@ -6,6 +6,7 @@
 #include "net.h"
 
 #define MAX_NUM_PLAYERS 2
+#define MESSAGE_BUFFER_SIZE 1000
 
 enum instance_type {
   SINGLE_PLAYER,
@@ -16,6 +17,7 @@ struct instance {
   enum instance_type type;
   int num_players;
   int player_index;
+  char message[MESSAGE_BUFFER_SIZE];
 
   char *host;
   int port;

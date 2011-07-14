@@ -35,6 +35,7 @@ int main() {
   starting_levels[1] = 1;
 
   struct instance new_instance;
+  new_instance.message[0] = 0;
   new_instance.type = MULTI_PLAYER;
   new_instance.num_players = 2;
   new_instance.player_index = 0;

@@ -147,6 +147,8 @@ void draw_game(struct instance *instance, struct display_data *display) {
     draw_text(display, display->text_buffer, P2_G2_LINES_LEFT, P2_G2_LINES_TOP, display->white);
   }
 
+  draw_text(display, instance->message, 0, 0, display->white);
+
   SDL_Flip(display->screen);
 }
 

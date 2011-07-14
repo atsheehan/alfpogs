@@ -13,6 +13,7 @@
 #define USER_INPUT_ID	4
 #define GAME_FULL_ID 5
 #define JOINED_GAME_ID 6
+#define MESSAGE_ID 7
 
 enum net_state {
   INIT,
@@ -48,7 +49,6 @@ void net_destroy(struct net_info *net_info);
 
 bool net_prepare_grid_update_buffer(char *buffer, int *buffer_size, struct grid *grids, int num_players);
 bool net_parse_grid_update_buffer(char *buffer, int buffer_size, struct grid *grids, int num_players);
-
 
 #endif /* NET_H */
 

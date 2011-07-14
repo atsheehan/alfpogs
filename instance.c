@@ -42,6 +42,9 @@ void instance_update(struct instance *instance) {
 	}
 	break;
 
+      case MESSAGE_ID:
+	strncpy(instance->message, (char *)&net->packet->data[1], MESSAGE_BUFFER_SIZE - 1);
+	break;
 
       case GRID_UPDATE_ID:
 	printf("received a GRID_UPDATE_ID packet\n");
