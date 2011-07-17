@@ -63,18 +63,18 @@ void draw_grid(struct display_data *display, struct grid *instance, int start_x,
 void draw_next_shape(struct display_data *display, unsigned char next_shape_index, int start_x, int start_y);
 void draw_text(struct display_data *display, const char *text, int start_x, int start_y, SDL_Color color);
 
-bool draw_init(struct display_data *data) {
+char draw_init(struct display_data *data) {
 
   data->screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, COLOR_DEPTH, SDL_SWSURFACE);
   if (data->screen == NULL) {
     fprintf(stderr, "SDL_SetVideoMode: %s\n", SDL_GetError());
-    return false;
+    return 0;
   }
 
   data->images = images_load(MASTER_IMAGE_FILENAME);
   if (data->images == NULL) {
     fprintf(stderr, "could not load the images properly\n");
-    return false;
+    return 0;
   }
 
   data->black = SDL_MapRGB(data->screen->format, 0, 0, 0);
@@ -85,10 +85,10 @@ bool draw_init(struct display_data *data) {
   data->font = TTF_OpenFont("font.ttf", 26);
   if (data->font == NULL) {
     fprintf(stderr, "could not load font\n");
-    return false;
+    return 0;
   }
 
-  return true;
+  return 1;
 }
 
 /* Clean up any resources used by the drawing subsystem. */
@@ -107,6 +107,7 @@ void draw_cleanup(struct display_data *data) {
 void draw_game(struct instance *instance, struct display_data *display) {
 
   SDL_Surface *background;
+
   if (instance->num_players == 1) {
     background = display->images[ONE_PLAYER_BACKGROUND];
   } else {
@@ -154,18 +155,19 @@ void draw_game(struct instance *instance, struct display_data *display) {
 
 void draw_next_shape(struct display_data *display, unsigned char next_shape_index, int start_x, int start_y) {
 
-  if (next_shape_index >= SHAPES) {
-    return;
-  }
-
   SDL_Rect block;
   int row, col;
   unsigned char grid_value;
   SDL_Surface *color_block;
+  unsigned char *shape_array;
+
+  if (next_shape_index >= SHAPES) {
+    return;
+  }
 
   block.w = block.h = BLOCK_SIZE;
 
-  unsigned char *shape_array = shape_get_grid(next_shape_index);
+  shape_array = shape_get_grid(next_shape_index);
 
   for (row = 0; row < SHAPE_ROWS; ++row) {
     for (col = 0; col < SHAPE_COLUMNS; ++col) {
@@ -235,12 +237,13 @@ SDL_Surface *get_block_surface(SDL_Surface **images, unsigned char value, int an
 
 void draw_text(struct display_data *display, const char *text, int start_x, int start_y, SDL_Color color) {
 
-  SDL_Surface *text_surface = TTF_RenderText_Solid(display->font, text, color);
+  SDL_Surface *text_surface;
+  SDL_Rect dest_rect;
+
+  text_surface = TTF_RenderText_Solid(display->font, text, color);
   if (text_surface == NULL) {
     return;
   }
-
-  SDL_Rect dest_rect;
   dest_rect.x = start_x;
   dest_rect.y = start_y;
   dest_rect.h = text_surface->h;
