@@ -20,6 +20,7 @@ struct connection {
   struct sockaddr_in address;
   bool has_left;
   bool in_instance;
+  bool finished;
   char event;
 };
 
@@ -135,6 +136,7 @@ int main() {
       memcpy(&new_connection->address, &client_address, sizeof(struct sockaddr_in));
       new_connection->in_instance = false;
       new_connection->has_left = false;
+      new_connection->finished = false;
       new_connection->event = NULL_ID;
 
       // add to connection list
@@ -237,22 +239,31 @@ void *new_instance_func(void *_params) {
   int update_counter = 0;
 
   int num_disconnected = 0;
+  int active_players = params->num_players;
 
-  while (num_disconnected != params->num_players) {
+  while (num_disconnected != params->num_players &&
+	 active_players > 1) {
 
     if (SDL_CondWait(params->sync_condition, mutex) == -1) {
       fprintf(stderr, "SDL_CondWait: %s\n", SDL_GetError());
       continue;
     }
 
+    active_players = params->num_players;
     num_disconnected = 0;
+
     for (i = 0; i < params->num_players; i++) {
 
       struct connection *connection = params->connections[i];
 
       if (connection->has_left) {
   	num_disconnected++;
+	active_players--;
   	continue;
+      }
+
+      if (grids[i].game_over) {
+	active_players--;
       }
 
       if (connection->event != NULL_ID) {
@@ -283,7 +294,6 @@ void *new_instance_func(void *_params) {
       grid_update(&grids[i]);
     }
 
-
     if (update_counter >= update_frequency) {
       int buffer_size = MAX_BUFFER_SIZE;
       if (net_prepare_grid_update_buffer(buffer, &buffer_size, grids, params->num_players)) {
@@ -304,10 +314,34 @@ void *new_instance_func(void *_params) {
     }
   }
   
+  // check for winner
+  int winner = -1;
+  for (i = 0; i < params->num_players; i++) {
+    if (!grids[i].game_over) {
+      // verify that there was only one winner
+      if (winner != -1) {
+	winner = -1;
+	break;
+      }
+      winner = i;
+    }
+  }
+
   printf("exiting func\n");
 
   for (i = 0; i < params->num_players; i++) {
+
+    // maybe send a GAME_END packet too
+
+    buffer[0] = MESSAGE_ID;
+    sprintf(&buffer[1], "game over, player %d wins", winner + 1);
+    int bytes_sent = sendto(params->sd, buffer, strlen(buffer) + 1, 0, (struct sockaddr *)&params->connections[i]->address, sizeof(struct sockaddr_in));
+    if (bytes_sent == -1) {
+      printf("error sending message packet\n");
+    }
+
     params->connections[i]->in_instance = false;
+    params->connections[i]->finished = true;
   }
   free(params->connections);
   SDL_DestroyMutex(mutex);
@@ -344,7 +378,7 @@ void *watchdog_func(void *_params) {
     while (connection_node != NULL) {
       struct connection *connection = (struct connection *)connection_node->data;
 
-      if (!connection->has_left && !connection->in_instance) {
+      if (!connection->has_left && !connection->in_instance && !connection->finished) {
 	waiting_connections[connections_found] = connection;
 	connections_found++;
       }

@@ -1,6 +1,6 @@
 ALL_HEADERS = game.h input.h grid.h images.h draw.h net.h shape.h instance.h list.h
 CC = gcc
-CFLAGS = -Wall `sdl-config --cflags`
+CFLAGS = -Wall `sdl-config --cflags` -O3
 OBJECTS = game.o input.o list.o draw.o grid.o shape.o instance.o images.o net.o
 SDL_LINKER = `sdl-config --libs` -lSDL_image -lSDL_net -lSDL_ttf
 
