@@ -84,7 +84,7 @@ void instance_update(struct instance *instance) {
       break;
 
     case JOIN_DENY:
-      instance->quit = true;
+      instance->quit = 1;
       break;
 
     default:

@@ -71,7 +71,7 @@ void input_game(struct instance *instance) {
 	}
 	break;
       case SDLK_ESCAPE:
-	instance->quit = true;
+	instance->quit = 1;
 	if (instance->type == MULTI_PLAYER) {
 	  // send quit message
 	}
@@ -81,7 +81,7 @@ void input_game(struct instance *instance) {
       break;
 
     case SDL_QUIT:
-      instance->quit = true;
+      instance->quit = 1;
 	if (instance->type == MULTI_PLAYER) {
 	  // send quit message
 	}

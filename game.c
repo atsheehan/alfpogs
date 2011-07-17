@@ -1,4 +1,3 @@
-#include <stdbool.h>
 #include "game.h"
 #include "draw.h"
 #include "input.h"
@@ -8,9 +7,11 @@
 void game_loop(SDL_cond *sync_condition, struct instance *instance) {
 
   struct display_data display_data;
+  SDL_mutex *mutex;
+
   draw_init(&display_data);
 
-  SDL_mutex *mutex = SDL_CreateMutex();
+  mutex = SDL_CreateMutex();
   SDL_mutexP(mutex);
 
   while (!instance->quit) {

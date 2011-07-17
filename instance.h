@@ -1,7 +1,6 @@
 #ifndef INSTANCE_H
 #define INSTANCE_H
 
-#include <stdbool.h>
 #include "grid.h"
 #include "net.h"
 
@@ -22,7 +21,7 @@ struct instance {
   char *host;
   int port;
 
-  bool quit;
+  char quit;
 
   struct net_info *net_info;
   struct grid *grids;

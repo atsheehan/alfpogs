@@ -4,7 +4,6 @@
 #include "SDL.h"
 #include "SDL_ttf.h"
 #include "instance.h"
-#include <stdbool.h>
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
@@ -18,7 +17,7 @@ struct display_data {
   char text_buffer[50];
 };
 
-bool draw_init(struct display_data *data);
+char draw_init(struct display_data *data);
 void draw_cleanup(struct display_data *data);
 
 void draw_game(struct instance *instance, struct display_data *display_data);

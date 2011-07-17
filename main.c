@@ -8,7 +8,16 @@
 
 Uint32 sync_framerate_func(Uint32 interval, void *_condition);
 
-int main() {
+int main(int argc, char **argv) {
+
+  struct grid grids[2];
+  int starting_levels[1];
+  struct instance new_instance;
+  struct net_info net_info;
+  Uint32 interval;
+  SDL_cond *sync_condition;
+  SDL_TimerID timer_id;
+
 
   // init SDL and all that jazz
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) == -1) {
@@ -26,34 +35,34 @@ int main() {
     exit(1);
   }
 
-  struct grid grids[2];
-  grid_init(&grids[0], 1, true);
-  grid_init(&grids[1], 1, true);
 
-  int starting_levels[1];
+  grid_init(&grids[0], 1, 1);
+  grid_init(&grids[1], 1, 1);
+
+
   starting_levels[0] = 1;
   starting_levels[1] = 1;
 
-  struct instance new_instance;
+
   new_instance.message[0] = 0;
   new_instance.type = MULTI_PLAYER;
   new_instance.num_players = 2;
   new_instance.player_index = 0;
   new_instance.grids = grids;
   new_instance.starting_levels = starting_levels;
-  new_instance.quit = false;
+  new_instance.quit = 0;
 
-  struct net_info net_info;
-  if (!net_init(&net_info, "localhost", 4485)) {
+
+  if (!net_init(&net_info, "69.55.9.123", 4485)) {
     exit(1);
   }
   new_instance.net_info = &net_info;
 
   // setup timer
-  Uint32 interval = 1000 / 30;
+  interval = 1000 / 30;
 
-  SDL_cond *sync_condition = SDL_CreateCond();
-  SDL_TimerID timer_id = SDL_AddTimer(interval, sync_framerate_func, sync_condition);
+  sync_condition = SDL_CreateCond();
+  timer_id = SDL_AddTimer(interval, sync_framerate_func, sync_condition);
 
   game_loop(sync_condition, &new_instance);
 
@@ -71,7 +80,9 @@ int main() {
 
 
 Uint32 sync_framerate_func(Uint32 interval, void *_condition) {
-  SDL_cond *condition = (SDL_cond *)_condition;
+  SDL_cond *condition;
+
+  condition = (SDL_cond *)_condition;
   SDL_CondBroadcast(condition);
 
   return interval;

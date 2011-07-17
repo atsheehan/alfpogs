@@ -19,23 +19,26 @@ static int image_dimensions[DIMENSIONS_PER_IMAGE * NUMBER_OF_IMAGES] = {
 
 SDL_Surface **images_load(const char *filename) {
 
-  SDL_Surface *master_image = IMG_Load(filename);
+  SDL_Rect source_rect;
+  int i;
+  SDL_Surface *master_image;
+  SDL_Surface **images_array;
+  int index;
+
+  master_image = IMG_Load(filename);
   if (master_image == NULL) {
     fprintf(stderr, "IMG_Load: %s\n", IMG_GetError());
     return NULL;
   }
 
-  SDL_Rect source_rect;
-  int i;
-
-  SDL_Surface **images_array = malloc(sizeof(SDL_Surface *) * NUMBER_OF_IMAGES);
+  images_array = malloc(sizeof(SDL_Surface *) * NUMBER_OF_IMAGES);
   if (images_array == NULL) {
     fprintf(stderr, "unable to allocate memory for the images_array\n");
     return NULL;
   }
 
   for (i = 0; i < NUMBER_OF_IMAGES; i++) {
-    int index = i * DIMENSIONS_PER_IMAGE;
+    index = i * DIMENSIONS_PER_IMAGE;
 
     source_rect.w = image_dimensions[index];
     source_rect.h = image_dimensions[index + 1];
