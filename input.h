@@ -3,6 +3,6 @@
 
 #include "instance.h"
 
-void input_game(struct instance *instance);
+void input_handle(struct instance *instance);
 
 #endif /* INPUT_H */

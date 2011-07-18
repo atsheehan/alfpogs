@@ -14,9 +14,9 @@ void game_loop(SDL_cond *sync_condition, struct instance *instance) {
   mutex = SDL_CreateMutex();
   SDL_mutexP(mutex);
 
-  while (!instance->quit) {
-    input_game(instance);
-    draw_game(instance, &display_data);
+  while (instance->state != STATE_QUITTING) {
+    input_handle(instance);
+    draw(instance, &display_data);
     instance_update(instance);
 
     SDL_CondWait(sync_condition, mutex);

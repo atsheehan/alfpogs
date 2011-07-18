@@ -10,6 +10,13 @@
 
 #define BLOCK_SIZE 20
 
+#define MENU_TOP 200
+#define MENU_NAME_LEFT 70
+#define MENU_SELECT_LEFT 40
+#define MENU_CONTENT_LEFT 200
+
+#define MENU_SPACING 50
+
 #define P1_G1_GRID_TOP 40
 #define P1_G1_GRID_LEFT 220
 
@@ -61,7 +68,7 @@
 SDL_Surface *get_block_surface(SDL_Surface **images, unsigned char value, int animation_index);
 void draw_grid(struct display_data *display, struct grid *instance, int start_x, int start_y);
 void draw_next_shape(struct display_data *display, unsigned char next_shape_index, int start_x, int start_y);
-void draw_text(struct display_data *display, const char *text, int start_x, int start_y, SDL_Color color);
+void draw_text(struct display_data *display, TTF_Font *font, const char *text, int start_x, int start_y, SDL_Color color);
 
 char draw_init(struct display_data *data) {
 
@@ -82,9 +89,15 @@ char draw_init(struct display_data *data) {
   data->white.g = 255;
   data->white.b = 255;
 
-  data->font = TTF_OpenFont("font.ttf", 26);
-  if (data->font == NULL) {
-    fprintf(stderr, "could not load font\n");
+  data->game_font = TTF_OpenFont("font.ttf", 26);
+  if (data->game_font == NULL) {
+    fprintf(stderr, "could not load game font\n");
+    return 0;
+  }
+
+  data->menu_font = TTF_OpenFont("font.ttf", 36);
+  if (data->game_font == NULL) {
+    fprintf(stderr, "could not load menu font\n");
     return 0;
   }
 
@@ -93,8 +106,12 @@ char draw_init(struct display_data *data) {
 
 /* Clean up any resources used by the drawing subsystem. */
 void draw_cleanup(struct display_data *data) {
-  if (data->font != NULL) {
-    TTF_CloseFont(data->font);
+  if (data->game_font != NULL) {
+    TTF_CloseFont(data->game_font);
+  }
+
+  if (data->menu_font != NULL) {
+    TTF_CloseFont(data->menu_font);
   }
 
   if (data->images != NULL) {
@@ -104,51 +121,79 @@ void draw_cleanup(struct display_data *data) {
 
 
 /* Draws any graphics to the screen while playing the game. */
-void draw_game(struct instance *instance, struct display_data *display) {
+void draw(struct instance *instance, struct display_data *display) {
 
   SDL_Surface *background;
+  struct menu_page *page;
+  int i, y;
 
-  if (instance->num_players == 1) {
-    background = display->images[ONE_PLAYER_BACKGROUND];
-  } else {
-    background = display->images[TWO_PLAYER_BACKGROUND];
+  switch (instance->state) {
+
+  case STATE_MENU:
+    background = display->images[MENU_BACKGROUND];
+    SDL_FillRect(display->screen, NULL, display->black);
+    SDL_BlitSurface(background, NULL, display->screen, NULL);
+    
+
+    page = &instance->menu.pages[instance->menu.current_page];
+
+    for (i = 0; i < page->number_of_entries; i++) {
+      y = MENU_TOP + (i * MENU_SPACING);
+
+      if (i == page->current_entry) {
+	draw_text(display, display->menu_font, "*", MENU_SELECT_LEFT, y, display->white);
+      }
+      draw_text(display, display->menu_font, page->entries[i].name, MENU_NAME_LEFT, y, display->white);
+    }
+    break;
+
+  case STATE_RUNNING:
+    if (instance->num_players == 1) {
+      background = display->images[ONE_PLAYER_BACKGROUND];
+    } else {
+      background = display->images[TWO_PLAYER_BACKGROUND];
+    }
+
+    SDL_FillRect(display->screen, NULL, display->black);
+    SDL_BlitSurface(background, NULL, display->screen, NULL);
+
+    if (instance->num_players == 1) {
+      draw_grid(display, &instance->grids[0], P1_G1_GRID_LEFT, P1_G1_GRID_TOP);
+      draw_next_shape(display, instance->grids[0].next_shape_index, P1_G1_NEXT_LEFT, P1_G1_NEXT_TOP);
+
+      draw_text(display, display->game_font, "score", P1_G1_SCORE_LEFT, P1_G1_SCORE_TOP, display->white);
+      draw_text(display, display->game_font, "level", P1_G1_LEVEL_LEFT, P1_G1_LEVEL_TOP, display->white);
+      draw_text(display, display->game_font, "lines", P1_G1_LINES_LEFT, P1_G1_LINES_TOP, display->white);
+
+    } else {
+      draw_grid(display, &instance->grids[0], P1_G2_GRID_LEFT, P1_G2_GRID_TOP);
+      draw_grid(display, &instance->grids[1], P2_G2_GRID_LEFT, P2_G2_GRID_TOP);
+
+      draw_next_shape(display, instance->grids[0].next_shape_index, P1_G2_NEXT_LEFT, P1_G2_NEXT_TOP);
+      draw_next_shape(display, instance->grids[1].next_shape_index, P2_G2_NEXT_LEFT, P2_G2_NEXT_TOP);
+
+      sprintf(display->text_buffer, "%.7d", instance->grids[0].score);
+      draw_text(display, display->game_font, display->text_buffer, P1_G2_SCORE_LEFT, P1_G2_SCORE_TOP, display->white);
+      sprintf(display->text_buffer, "%.7d", instance->grids[1].score);
+      draw_text(display, display->game_font, display->text_buffer, P2_G2_SCORE_LEFT, P2_G2_SCORE_TOP, display->white);
+
+      sprintf(display->text_buffer, "%.7d", instance->grids[0].lines_cleared);
+      draw_text(display, display->game_font, display->text_buffer, P1_G2_LEVEL_LEFT, P1_G2_LEVEL_TOP, display->white);
+      sprintf(display->text_buffer, "%.7d", instance->grids[1].lines_cleared);
+      draw_text(display, display->game_font, display->text_buffer, P2_G2_LEVEL_LEFT, P2_G2_LEVEL_TOP, display->white);
+
+      sprintf(display->text_buffer, "%.2d", instance->grids[0].level);
+      draw_text(display, display->game_font, display->text_buffer, P1_G2_LINES_LEFT, P1_G2_LINES_TOP, display->white);
+      sprintf(display->text_buffer, "%.2d", instance->grids[1].level);
+      draw_text(display, display->game_font, display->text_buffer, P2_G2_LINES_LEFT, P2_G2_LINES_TOP, display->white);
+    }
+
+    draw_text(display, display->game_font, instance->message, 0, 0, display->white);
+    break;
+
+  default:
+    break;
   }
-
-  SDL_FillRect(display->screen, NULL, display->black);
-  SDL_BlitSurface(background, NULL, display->screen, NULL);
-
-  if (instance->num_players == 1) {
-    draw_grid(display, &instance->grids[0], P1_G1_GRID_LEFT, P1_G1_GRID_TOP);
-    draw_next_shape(display, instance->grids[0].next_shape_index, P1_G1_NEXT_LEFT, P1_G1_NEXT_TOP);
-
-    draw_text(display, "score", P1_G1_SCORE_LEFT, P1_G1_SCORE_TOP, display->white);
-    draw_text(display, "level", P1_G1_LEVEL_LEFT, P1_G1_LEVEL_TOP, display->white);
-    draw_text(display, "lines", P1_G1_LINES_LEFT, P1_G1_LINES_TOP, display->white);
-
-  } else {
-    draw_grid(display, &instance->grids[0], P1_G2_GRID_LEFT, P1_G2_GRID_TOP);
-    draw_grid(display, &instance->grids[1], P2_G2_GRID_LEFT, P2_G2_GRID_TOP);
-
-    draw_next_shape(display, instance->grids[0].next_shape_index, P1_G2_NEXT_LEFT, P1_G2_NEXT_TOP);
-    draw_next_shape(display, instance->grids[1].next_shape_index, P2_G2_NEXT_LEFT, P2_G2_NEXT_TOP);
-
-    sprintf(display->text_buffer, "%.7d", instance->grids[0].score);
-    draw_text(display, display->text_buffer, P1_G2_SCORE_LEFT, P1_G2_SCORE_TOP, display->white);
-    sprintf(display->text_buffer, "%.7d", instance->grids[1].score);
-    draw_text(display, display->text_buffer, P2_G2_SCORE_LEFT, P2_G2_SCORE_TOP, display->white);
-
-    sprintf(display->text_buffer, "%.7d", instance->grids[0].lines_cleared);
-    draw_text(display, display->text_buffer, P1_G2_LEVEL_LEFT, P1_G2_LEVEL_TOP, display->white);
-    sprintf(display->text_buffer, "%.7d", instance->grids[1].lines_cleared);
-    draw_text(display, display->text_buffer, P2_G2_LEVEL_LEFT, P2_G2_LEVEL_TOP, display->white);
-
-    sprintf(display->text_buffer, "%.2d", instance->grids[0].level);
-    draw_text(display, display->text_buffer, P1_G2_LINES_LEFT, P1_G2_LINES_TOP, display->white);
-    sprintf(display->text_buffer, "%.2d", instance->grids[1].level);
-    draw_text(display, display->text_buffer, P2_G2_LINES_LEFT, P2_G2_LINES_TOP, display->white);
-  }
-
-  draw_text(display, instance->message, 0, 0, display->white);
 
   SDL_Flip(display->screen);
 }
@@ -235,12 +280,12 @@ SDL_Surface *get_block_surface(SDL_Surface **images, unsigned char value, int an
   }
 }
 
-void draw_text(struct display_data *display, const char *text, int start_x, int start_y, SDL_Color color) {
+void draw_text(struct display_data *display, TTF_Font *font, const char *text, int start_x, int start_y, SDL_Color color) {
 
   SDL_Surface *text_surface;
   SDL_Rect dest_rect;
 
-  text_surface = TTF_RenderText_Solid(display->font, text, color);
+  text_surface = TTF_RenderText_Solid(font, text, color);
   if (text_surface == NULL) {
     return;
   }

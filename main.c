@@ -2,6 +2,7 @@
 #include "game.h"
 #include "instance.h"
 #include "net.h"
+#include "menu.h"
 #include "SDL.h"
 #include "SDL_net.h"
 #include "SDL_ttf.h"
@@ -36,6 +37,12 @@ int main(int argc, char **argv) {
   }
 
 
+  if (!menu_init(&new_instance.menu)) {
+    fprintf(stderr, "menu_init: unable to init menu\n");
+    exit(1);
+  }
+
+
   grid_init(&grids[0], 1, 1);
   grid_init(&grids[1], 1, 1);
 
@@ -43,15 +50,13 @@ int main(int argc, char **argv) {
   starting_levels[0] = 1;
   starting_levels[1] = 1;
 
-
   new_instance.message[0] = 0;
-  new_instance.type = MULTI_PLAYER;
+  new_instance.state = STATE_MENU;
+  new_instance.game_type = MULTI_PLAYER;
   new_instance.num_players = 2;
   new_instance.player_index = 0;
   new_instance.grids = grids;
   new_instance.starting_levels = starting_levels;
-  new_instance.quit = 0;
-
 
   if (!net_init(&net_info, "69.55.9.123", 4485)) {
     exit(1);
@@ -65,6 +70,8 @@ int main(int argc, char **argv) {
   timer_id = SDL_AddTimer(interval, sync_framerate_func, sync_condition);
 
   game_loop(sync_condition, &new_instance);
+
+  menu_destroy(&new_instance.menu);
 
   net_destroy(&net_info);
 

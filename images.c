@@ -14,7 +14,8 @@ static int image_dimensions[DIMENSIONS_PER_IMAGE * NUMBER_OF_IMAGES] = {
   20, 20, 80, 480,
   20, 20, 100, 480,
   20, 20, 120, 480,
-  20, 20, 0, 500
+  20, 20, 0, 500,
+  640, 480, 0, 520
 };
 
 SDL_Surface **images_load(const char *filename) {

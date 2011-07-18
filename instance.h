@@ -2,18 +2,29 @@
 #define INSTANCE_H
 
 #include "grid.h"
+#include "menu.h"
 #include "net.h"
 
 #define MAX_NUM_PLAYERS 2
 #define MESSAGE_BUFFER_SIZE 1000
 
-enum instance_type {
+enum game_type {
   SINGLE_PLAYER,
   MULTI_PLAYER
 };
 
+enum game_state {
+  STATE_MENU,
+  STATE_RUNNING,
+  STATE_QUITTING
+};
+
 struct instance {
-  enum instance_type type;
+  enum game_state state;
+  enum game_type game_type;
+
+  struct menu menu;
+
   int num_players;
   int player_index;
   char message[MESSAGE_BUFFER_SIZE];
