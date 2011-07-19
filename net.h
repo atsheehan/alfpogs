@@ -4,6 +4,7 @@
 #include "SDL_net.h"
 #include "grid.h"
 
+#define DEFAULT_PORT 4485
 #define PACKET_BUFFER_SIZE 1000
 
 #define JOIN_GAME_ID	1

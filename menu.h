@@ -3,6 +3,8 @@
 
 #include "SDL.h"
 
+#define HOST_NAME_SIZE 50
+
 struct instance;
 
 enum menu_pages {
@@ -31,7 +33,7 @@ struct menu {
   enum menu_pages current_page;
 };
 
-char menu_init(struct menu *menu);
+char menu_init(struct menu *menu, struct instance *instance);
 void menu_destroy(struct menu *menu);
 
 void menu_next_entry(struct menu *menu);

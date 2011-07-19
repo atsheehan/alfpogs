@@ -29,16 +29,20 @@ struct instance {
   int player_index;
   char message[MESSAGE_BUFFER_SIZE];
 
-  char *host;
+  char host[HOST_NAME_SIZE];
   int port;
 
   char quit;
 
   struct net_info *net_info;
   struct grid *grids;
-  int *starting_levels;
+  int starting_level;
 };
 
+char instance_init(struct instance *instance);
+void instance_destroy(struct instance *instance);
 void instance_update(struct instance *instance);
+char instance_single_player_init(struct instance *instance);
+char instance_multi_player_init(struct instance *instance);
 
 #endif /* INSTANCE_H */

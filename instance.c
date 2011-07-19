@@ -6,12 +6,86 @@
 #include <string.h>
 #include "SDL_net.h"
 
+char instance_init(struct instance *instance) {
+
+  instance->state = STATE_MENU;
+  instance->game_type = SINGLE_PLAYER;
+
+  if (!menu_init(&instance->menu, instance)) {
+    fprintf(stderr, "instance_init: error initializing the menu\n");
+    return 0;
+  }
+
+  instance->num_players = 1;
+  instance->player_index = 0;
+  instance->starting_level = 1;
+
+  memset(instance->message, 0, MESSAGE_BUFFER_SIZE);
+  memset(instance->host, 0, HOST_NAME_SIZE);
+  sprintf(instance->host, "69.55.9.123");
+
+  instance->port = DEFAULT_PORT;
+  instance->quit = 0;
+
+  // initialize this stuff later when we know the game type
+  instance->net_info = 0;
+  instance->grids = 0;
+
+  return 1;
+}
+
+char instance_single_player_init(struct instance *instance) {
+  int i;
+
+  instance->num_players = 1;
+
+  instance->grids = malloc(sizeof(struct grid) * instance->num_players);
+  if (instance->grids == NULL) {
+    return 0;
+  }
+
+  for (i = 0; i < instance->num_players; i++) {
+    grid_init(&instance->grids[i], instance->starting_level, 0);
+  }
+
+  instance->game_type = SINGLE_PLAYER;
+  return 1;
+}
+
+char instance_multi_player_init(struct instance *instance) {
+  int i;
+
+  instance->num_players = 2;
+
+  instance->grids = malloc(sizeof(struct grid) * instance->num_players);
+  if (instance->grids == NULL) {
+    return 0;
+  }
+
+  for (i = 0; i < instance->num_players; i++) {
+    grid_init(&instance->grids[i], instance->starting_level, 1);
+  }
+
+  instance->net_info = malloc(sizeof(struct net_info));
+  if (instance->net_info == NULL) {
+    return 0;
+  }
+
+  if (!net_init(instance->net_info, instance->host, instance->port)) {
+    return 0;
+  }
+
+  instance->game_type = MULTI_PLAYER;
+  return 1;
+}
+
 void instance_update(struct instance *instance) {
   int i;
 
   switch (instance->state) {
 
   case STATE_MENU:
+    break;
 
   case STATE_RUNNING:
     if (instance->game_type == SINGLE_PLAYER) {
@@ -103,4 +177,7 @@ void instance_update(struct instance *instance) {
   default:
     break;
   }
+}
+
+void instance_destroy(struct instance *instance) {
 }
