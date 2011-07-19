@@ -1,6 +1,10 @@
 #ifndef MENU_H
 #define MENU_H
 
+#include "SDL.h"
+
+struct instance;
+
 enum menu_pages {
   MAIN_MENU,
   SINGLE_PLAYER_MENU,
@@ -10,6 +14,9 @@ enum menu_pages {
 
 struct menu_entry {
   char *name;
+  char *content;
+  int content_size;
+  void (*handler)(struct menu_entry *entry, struct instance *instance, SDLKey key);
 };
 
 struct menu_page {
@@ -29,5 +36,6 @@ void menu_destroy(struct menu *menu);
 
 void menu_next_entry(struct menu *menu);
 void menu_prev_entry(struct menu *menu);
+void menu_handle_input(struct menu *menu, struct instance *instance, SDLKey key);
 
 #endif /* MENU_H */

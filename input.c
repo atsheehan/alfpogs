@@ -27,6 +27,7 @@ void input_handle(struct instance *instance) {
 	  break;
 
 	default:
+	  menu_handle_input(&instance->menu, instance, event.key.keysym.sym);
 	  break;
 	}
 	break;

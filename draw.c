@@ -13,7 +13,7 @@
 #define MENU_TOP 200
 #define MENU_NAME_LEFT 70
 #define MENU_SELECT_LEFT 40
-#define MENU_CONTENT_LEFT 200
+#define MENU_CONTENT_LEFT 320
 
 #define MENU_SPACING 50
 
@@ -35,8 +35,8 @@
 #define P2_G2_NEXT_TOP 50
 #define P2_G2_NEXT_LEFT 545
 
-#define P1_G1_SCORE_TOP 150 // TODO
-#define P1_G1_SCORE_LEFT 490 // TODO
+#define P1_G1_SCORE_TOP 75
+#define P1_G1_SCORE_LEFT 70
 
 #define P1_G2_SCORE_TOP 170
 #define P1_G2_SCORE_LEFT 15
@@ -44,8 +44,8 @@
 #define P2_G2_SCORE_TOP 170
 #define P2_G2_SCORE_LEFT 545
 
-#define P1_G1_LEVEL_TOP 150 // TODO
-#define P1_G1_LEVEL_LEFT 490 // TODO
+#define P1_G1_LEVEL_TOP 165
+#define P1_G1_LEVEL_LEFT 100
 
 #define P1_G2_LEVEL_TOP 240
 #define P1_G2_LEVEL_LEFT 15
@@ -53,8 +53,8 @@
 #define P2_G2_LEVEL_TOP 240
 #define P2_G2_LEVEL_LEFT 545
 
-#define P1_G1_LINES_TOP 150 // tODO
-#define P1_G1_LINES_LEFT 490 // TODO
+#define P1_G1_LINES_TOP 255
+#define P1_G1_LINES_LEFT 70
 
 #define P1_G2_LINES_TOP 310
 #define P1_G2_LINES_LEFT 15
@@ -143,29 +143,37 @@ void draw(struct instance *instance, struct display_data *display) {
       if (i == page->current_entry) {
 	draw_text(display, display->menu_font, "*", MENU_SELECT_LEFT, y, display->white);
       }
+      if (page->entries[i].content != NULL) {
+	draw_text(display, display->menu_font, page->entries[i].content, MENU_CONTENT_LEFT, y, display->white);
+      }
       draw_text(display, display->menu_font, page->entries[i].name, MENU_NAME_LEFT, y, display->white);
     }
     break;
 
   case STATE_RUNNING:
-    if (instance->num_players == 1) {
-      background = display->images[ONE_PLAYER_BACKGROUND];
-    } else {
-      background = display->images[TWO_PLAYER_BACKGROUND];
-    }
 
     SDL_FillRect(display->screen, NULL, display->black);
-    SDL_BlitSurface(background, NULL, display->screen, NULL);
 
     if (instance->num_players == 1) {
+      background = display->images[ONE_PLAYER_BACKGROUND];
+
+      SDL_BlitSurface(background, NULL, display->screen, NULL);
+
       draw_grid(display, &instance->grids[0], P1_G1_GRID_LEFT, P1_G1_GRID_TOP);
       draw_next_shape(display, instance->grids[0].next_shape_index, P1_G1_NEXT_LEFT, P1_G1_NEXT_TOP);
 
-      draw_text(display, display->game_font, "score", P1_G1_SCORE_LEFT, P1_G1_SCORE_TOP, display->white);
-      draw_text(display, display->game_font, "level", P1_G1_LEVEL_LEFT, P1_G1_LEVEL_TOP, display->white);
-      draw_text(display, display->game_font, "lines", P1_G1_LINES_LEFT, P1_G1_LINES_TOP, display->white);
+      sprintf(display->text_buffer, "%.7d", instance->grids[0].score);
+      draw_text(display, display->game_font, display->text_buffer, P1_G1_SCORE_LEFT, P1_G1_SCORE_TOP, display->white);
+      sprintf(display->text_buffer, "%.2d", instance->grids[0].level);
+      draw_text(display, display->game_font, display->text_buffer, P1_G1_LEVEL_LEFT, P1_G1_LEVEL_TOP, display->white);
+      sprintf(display->text_buffer, "%.7d", instance->grids[0].lines_cleared);
+      draw_text(display, display->game_font, display->text_buffer, P1_G1_LINES_LEFT, P1_G1_LINES_TOP, display->white);
 
     } else {
+      background = display->images[TWO_PLAYER_BACKGROUND];
+
+      SDL_BlitSurface(background, NULL, display->screen, NULL);
+
       draw_grid(display, &instance->grids[0], P1_G2_GRID_LEFT, P1_G2_GRID_TOP);
       draw_grid(display, &instance->grids[1], P2_G2_GRID_LEFT, P2_G2_GRID_TOP);
 
