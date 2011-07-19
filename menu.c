@@ -79,7 +79,7 @@ char menu_init(struct menu *menu, struct instance *instance) {
     fprintf(stderr, "cannot allocate memory for entry content\n");
     return 0;
   }
-  snprintf(entry->content, entry->content_size, "< %02d >", 1);
+  sprintf(entry->content, "< %02d >", 1);
   entry->handler = menu_set_level_handler;
 
   entry = &page->entries[2];
@@ -218,7 +218,7 @@ void menu_set_level_handler(struct menu_entry *entry, struct instance *instance,
     }
   }
 
-  snprintf(entry->content, entry->content_size, "< %02d >", instance->starting_level);
+  sprintf(entry->content, "< %02d >", instance->starting_level);
 }
 
 void menu_set_host_handler(struct menu_entry *entry, struct instance *instance, SDLKey key) {
