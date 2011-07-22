@@ -336,10 +336,26 @@ void grid_rotate_shape(struct grid *grid) {
     grid->shape_rotation = 0;
   }
 
-  /* If the rotation puts the grid in an invalid position, revert back to the original rotation. */
-  if (grid_is_shape_overlapping(grid)) {
-    grid->shape_rotation = original_rotation;
+  /* If the rotation isn't in an invalid position, we can keep the changes, otherwise we have to try a few
+     more possibilities. */
+  if (!grid_is_shape_overlapping(grid)) {
+    return;
   }
+
+  /* Try moving the piece to the left or the right and see if that works. */
+  grid->shape_col++;
+  if (!grid_is_shape_overlapping(grid)) {
+    return;
+  }
+
+  grid->shape_col -= 2;
+  if (!grid_is_shape_overlapping(grid)) {
+    return;
+  }
+
+  /* This piece has no space to rotate, so revert it back to the original position. */
+  grid->shape_col++;
+  grid->shape_rotation = original_rotation;
 }
 
 /* Marks the grid as game over and sets each of the blocks to the game over state. */

@@ -12,6 +12,9 @@ void menu_start_single_game_handler(struct menu_entry *entry, struct instance *i
 void menu_start_multi_game_handler(struct menu_entry *entry, struct instance *instance, SDLKey key);
 void menu_set_level_handler(struct menu_entry *entry, struct instance *instance, SDLKey key);
 void menu_set_host_handler(struct menu_entry *entry, struct instance *instance, SDLKey key);
+void menu_leave_game_handler(struct menu_entry *entry, struct instance *instance, SDLKey key);
+void menu_resume_game_handler(struct menu_entry *entry, struct instance *instance, SDLKey key);
+
 char menu_get_char_from_key(SDLKey key);
 
 char menu_init(struct menu *menu, struct instance *instance) {
@@ -112,7 +115,8 @@ char menu_init(struct menu *menu, struct instance *instance) {
     fprintf(stderr, "cannot allocate memory for entry content\n");
     return 0;
   }
-  entry->content[0] = '\0';
+  strncpy(entry->content, instance->host, HOST_NAME_SIZE - 1);
+  entry->content[HOST_NAME_SIZE - 1] = 0;
   entry->handler = menu_set_host_handler;
 
   entry = &page->entries[2];
@@ -120,6 +124,34 @@ char menu_init(struct menu *menu, struct instance *instance) {
   entry->content = NULL;
   entry->content_size = 0;
   entry->handler = menu_back_to_main_handler;
+
+  page = &menu->pages[PAUSE_MENU];
+
+  page->number_of_entries = 3;
+  page->current_entry = 0;
+  page->entries = malloc(sizeof(struct menu_entry) * page->number_of_entries);
+  if (page->entries == NULL) {
+    fprintf(stderr, "cannot allocate memory for the page entries\n");
+    return 0;
+  }
+
+  entry = &page->entries[0];
+  entry->name = "resume game";
+  entry->content = NULL;
+  entry->content_size = 0;
+  entry->handler = menu_resume_game_handler;
+
+  entry = &page->entries[1];
+  entry->name = "leave game";
+  entry->content = NULL;
+  entry->content_size = 0;
+  entry->handler = menu_leave_game_handler;
+
+  entry = &page->entries[2];
+  entry->name = "quit";
+  entry->content = NULL;
+  entry->content_size = 0;
+  entry->handler = menu_quit_game_handler;
 
   return 1;
 }
@@ -239,6 +271,17 @@ void menu_set_host_handler(struct menu_entry *entry, struct instance *instance, 
   }
 
   strncpy(entry->content, instance->host, entry->content_size - 1);
+}
+
+void menu_leave_game_handler(struct menu_entry *entry, struct instance *instance, SDLKey key) {
+  instance->menu.current_page = MAIN_MENU;
+  // kill instance
+  // send quit message if multiplayer game
+}
+
+void menu_resume_game_handler(struct menu_entry *entry, struct instance *instance, SDLKey key) {
+  instance->state = STATE_RUNNING;
+  // send resume message for multi?
 }
 
 char menu_get_char_from_key(SDLKey key) {

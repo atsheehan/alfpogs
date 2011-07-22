@@ -78,7 +78,7 @@ void input_handle(struct instance *instance) {
 	    instance->net_info->last_time_sent = instance->net_info->time;
 	  }
 	  break;
-	case SDLK_SPACE:
+	case SDLK_UP:
 	  grid_rotate_shape(&instance->grids[instance->player_index]);
 	  if (instance->game_type == MULTI_PLAYER) {
 	    instance->net_info->packet->len = 2;
@@ -89,7 +89,7 @@ void input_handle(struct instance *instance) {
 	    instance->net_info->last_time_sent = instance->net_info->time;
 	  }
 	  break;
-	case SDLK_UP:
+	case SDLK_SPACE:
 	  grid_drop_shape(&instance->grids[instance->player_index]);
 	  if (instance->game_type == MULTI_PLAYER) {
 	    instance->net_info->packet->len = 2;
@@ -101,9 +101,12 @@ void input_handle(struct instance *instance) {
 	  }
 	  break;
 	case SDLK_ESCAPE:
-	  instance->state = STATE_QUITTING;
+
+	  instance->menu.current_page = PAUSE_MENU;
+	  instance->state = STATE_MENU;
+
 	  if (instance->game_type == MULTI_PLAYER) {
-	    // send quit message
+	    // send pause message?
 	  }
 	default:
 	  break;
