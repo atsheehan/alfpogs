@@ -2,20 +2,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "menu.h"
+#include "input.h"
 #include "instance.h"
 
-void menu_single_player_game_handler(struct menu_entry *entry, struct instance *instance, SDLKey key);
-void menu_multi_player_game_handler(struct menu_entry *entry, struct instance *instance, SDLKey key);
-void menu_quit_game_handler(struct menu_entry *entry, struct instance *instance, SDLKey key);
-void menu_back_to_main_handler(struct menu_entry *entry, struct instance *instance, SDLKey key);
-void menu_start_single_game_handler(struct menu_entry *entry, struct instance *instance, SDLKey key);
-void menu_start_multi_game_handler(struct menu_entry *entry, struct instance *instance, SDLKey key);
-void menu_set_level_handler(struct menu_entry *entry, struct instance *instance, SDLKey key);
-void menu_set_host_handler(struct menu_entry *entry, struct instance *instance, SDLKey key);
-void menu_leave_game_handler(struct menu_entry *entry, struct instance *instance, SDLKey key);
-void menu_resume_game_handler(struct menu_entry *entry, struct instance *instance, SDLKey key);
-
-char menu_get_char_from_key(SDLKey key);
+void menu_single_player_game_handler(struct menu_entry *entry, struct instance *instance, enum input_event event);
+void menu_multi_player_game_handler(struct menu_entry *entry, struct instance *instance, enum input_event event);
+void menu_quit_game_handler(struct menu_entry *entry, struct instance *instance, enum input_event event);
+void menu_back_to_main_handler(struct menu_entry *entry, struct instance *instance, enum input_event event);
+void menu_start_single_game_handler(struct menu_entry *entry, struct instance *instance, enum input_event event);
+void menu_start_multi_game_handler(struct menu_entry *entry, struct instance *instance, enum input_event event);
+void menu_set_level_handler(struct menu_entry *entry, struct instance *instance, enum input_event event);
+void menu_set_host_handler(struct menu_entry *entry, struct instance *instance, enum input_event event);
+void menu_leave_game_handler(struct menu_entry *entry, struct instance *instance, enum input_event event);
+void menu_resume_game_handler(struct menu_entry *entry, struct instance *instance, enum input_event event);
 
 char menu_init(struct menu *menu, struct instance *instance) {
   struct menu_page *page;
@@ -157,7 +156,6 @@ char menu_init(struct menu *menu, struct instance *instance) {
 }
 
 void menu_destroy(struct menu *menu) {
-
 }
 
 void menu_next_entry(struct menu *menu) {
@@ -182,49 +180,49 @@ void menu_prev_entry(struct menu *menu) {
   }
 }
 
-void menu_handle_input(struct menu *menu, struct instance *instance, SDLKey key) {
+void menu_handle_input(struct menu *menu, struct instance *instance, enum input_event event) {
   struct menu_page *page;
   struct menu_entry *entry;
 
   page = &menu->pages[menu->current_page];
   entry = &page->entries[page->current_entry];
   
-  entry->handler(entry, instance, key);
+  entry->handler(entry, instance, event);
 }
 
-void menu_single_player_game_handler(struct menu_entry *entry, struct instance *instance, SDLKey key) {
-  if (key == SDLK_RETURN) {
+void menu_single_player_game_handler(struct menu_entry *entry, struct instance *instance, enum input_event event) {
+  if (event == INPUT_BUTTON_1) {
     instance->menu.current_page = SINGLE_PLAYER_MENU;
   }
 }
 
-void menu_multi_player_game_handler(struct menu_entry *entry, struct instance *instance, SDLKey key) {
-  if (key == SDLK_RETURN) {
+void menu_multi_player_game_handler(struct menu_entry *entry, struct instance *instance, enum input_event event) {
+  if (event == INPUT_BUTTON_1) {
     instance->menu.current_page = MULTI_PLAYER_MENU;
   }
 }
 
-void menu_quit_game_handler(struct menu_entry *entry, struct instance *instance, SDLKey key) {
-  if (key == SDLK_RETURN) {
+void menu_quit_game_handler(struct menu_entry *entry, struct instance *instance, enum input_event event) {
+  if (event == INPUT_BUTTON_1) {
     instance->state = STATE_QUITTING;
   }
 }
 
-void menu_back_to_main_handler(struct menu_entry *entry, struct instance *instance, SDLKey key) {
-  if (key == SDLK_RETURN) {
+void menu_back_to_main_handler(struct menu_entry *entry, struct instance *instance, enum input_event event) {
+  if (event == INPUT_BUTTON_1) {
     instance->menu.current_page = MAIN_MENU;
   }
 }
 
-void menu_start_single_game_handler(struct menu_entry *entry, struct instance *instance, SDLKey key) {
-  if (key == SDLK_RETURN) {
+void menu_start_single_game_handler(struct menu_entry *entry, struct instance *instance, enum input_event event) {
+  if (event == INPUT_BUTTON_1) {
     instance_single_player_init(instance);
     instance->state = STATE_RUNNING;
   }
 }
 
-void menu_start_multi_game_handler(struct menu_entry *entry, struct instance *instance, SDLKey key) {
-  if (key == SDLK_RETURN) {
+void menu_start_multi_game_handler(struct menu_entry *entry, struct instance *instance, enum input_event event) {
+  if (event == INPUT_BUTTON_1) {
     if (!instance_multi_player_init(instance)) {
       fprintf(stderr, "could not initialize the multi player instance\n");
       return;
@@ -233,8 +231,8 @@ void menu_start_multi_game_handler(struct menu_entry *entry, struct instance *in
   }
 }
 
-void menu_set_level_handler(struct menu_entry *entry, struct instance *instance, SDLKey key) {
-  if (key == SDLK_RIGHT) {
+void menu_set_level_handler(struct menu_entry *entry, struct instance *instance, enum input_event event) {
+  if (event == INPUT_RIGHT) {
     if (instance->starting_level >= MAX_LEVEL) {
       instance->starting_level = MAX_LEVEL;
     } else {
@@ -242,7 +240,7 @@ void menu_set_level_handler(struct menu_entry *entry, struct instance *instance,
     }
   }
 
-  if (key == SDLK_LEFT) {
+  if (event == INPUT_LEFT) {
     if (instance->starting_level <= MIN_LEVEL) {
       instance->starting_level = MIN_LEVEL;
     } else {
@@ -253,105 +251,33 @@ void menu_set_level_handler(struct menu_entry *entry, struct instance *instance,
   sprintf(entry->content, "< %02d >", instance->starting_level);
 }
 
-void menu_set_host_handler(struct menu_entry *entry, struct instance *instance, SDLKey key) {
-  int length;
+void menu_set_host_handler(struct menu_entry *entry, struct instance *instance, enum input_event event) {
+  /* int length; */
 
-  length = strlen(instance->host);
+  /* length = strlen(instance->host); */
 
-  if ((key == SDLK_BACKSPACE || key == SDLK_DELETE) &&
-      length > 0) {
+  /* if ((key == SDLK_BACKSPACE || key == SDLK_DELETE) && */
+  /*     length > 0) { */
 
-    instance->host[length - 1] = 0;
-  } else {
+  /*   instance->host[length - 1] = 0; */
+  /* } else { */
 
-    if (length < HOST_NAME_SIZE - 1) {
-      instance->host[length] = menu_get_char_from_key(key);
-      instance->host[length + 1] = 0;
-    }
-  }
+  /*   if (length < HOST_NAME_SIZE - 1) { */
+  /*     instance->host[length] = menu_get_char_from_key(key); */
+  /*     instance->host[length + 1] = 0; */
+  /*   } */
+  /* } */
 
-  strncpy(entry->content, instance->host, entry->content_size - 1);
+  /* strncpy(entry->content, instance->host, entry->content_size - 1); */
 }
 
-void menu_leave_game_handler(struct menu_entry *entry, struct instance *instance, SDLKey key) {
+void menu_leave_game_handler(struct menu_entry *entry, struct instance *instance, enum input_event event) {
   instance->menu.current_page = MAIN_MENU;
   // kill instance
   // send quit message if multiplayer game
 }
 
-void menu_resume_game_handler(struct menu_entry *entry, struct instance *instance, SDLKey key) {
+void menu_resume_game_handler(struct menu_entry *entry, struct instance *instance, enum input_event event) {
   instance->state = STATE_RUNNING;
   // send resume message for multi?
-}
-
-char menu_get_char_from_key(SDLKey key) {
-  switch (key) {
-  case SDLK_a: return 'a';
-  case SDLK_b: return 'b';
-  case SDLK_c: return 'c';
-  case SDLK_d: return 'd';
-  case SDLK_e: return 'e';
-  case SDLK_f: return 'f';
-  case SDLK_g: return 'g';
-  case SDLK_h: return 'h';
-  case SDLK_i: return 'i';
-  case SDLK_j: return 'j';
-  case SDLK_k: return 'k';
-  case SDLK_l: return 'l';
-  case SDLK_m: return 'm';
-  case SDLK_n: return 'n';
-  case SDLK_o: return 'o';
-  case SDLK_p: return 'p';
-  case SDLK_q: return 'q';
-  case SDLK_r: return 'r';
-  case SDLK_s: return 's';
-  case SDLK_t: return 't';
-  case SDLK_u: return 'u';
-  case SDLK_v: return 'v';
-  case SDLK_w: return 'w';
-  case SDLK_x: return 'x';
-  case SDLK_y: return 'y';
-  case SDLK_z: return 'z';
-  case SDLK_0: return '0';
-  case SDLK_1: return '1';
-  case SDLK_2: return '2';
-  case SDLK_3: return '3';
-  case SDLK_4: return '4';
-  case SDLK_5: return '5';
-  case SDLK_6: return '6';
-  case SDLK_7: return '7';
-  case SDLK_8: return '8';
-  case SDLK_9: return '9';
-  case SDLK_KP0: return '0';
-  case SDLK_KP1: return '1';
-  case SDLK_KP2: return '2';
-  case SDLK_KP3: return '3';
-  case SDLK_KP4: return '4';
-  case SDLK_KP5: return '5';
-  case SDLK_KP6: return '6';
-  case SDLK_KP7: return '7';
-  case SDLK_KP8: return '8';
-  case SDLK_KP9: return '9';
-  case SDLK_KP_PERIOD: return '.';
-  case SDLK_KP_DIVIDE: return '/';
-  case SDLK_KP_MULTIPLY: return '*';
-  case SDLK_KP_MINUS: return '-';
-  case SDLK_KP_PLUS: return '+';
-  case SDLK_KP_EQUALS: return '=';
-  case SDLK_PERIOD: return '.';
-  case SDLK_EXCLAIM: return '!';
-  case SDLK_QUOTEDBL: return '"';
-  case SDLK_HASH: return '#';
-  case SDLK_DOLLAR: return '$';
-  case SDLK_AMPERSAND: return '&';
-  case SDLK_QUOTE: return '\\';
-  case SDLK_LEFTPAREN: return '(';
-  case SDLK_RIGHTPAREN: return ')';
-  case SDLK_ASTERISK: return '*';
-  case SDLK_PLUS: return '+';
-  case SDLK_COMMA: return ',';
-  case SDLK_SLASH: return '/';
-  case SDLK_SPACE: return ' ';
-  default: return 0;
-  }
 }

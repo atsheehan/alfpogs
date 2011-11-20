@@ -4,6 +4,7 @@
 #include "grid.h"
 #include "menu.h"
 #include "net.h"
+#include "SDL.h"
 
 #define MAX_NUM_PLAYERS 2
 #define MESSAGE_BUFFER_SIZE 1000
@@ -37,6 +38,10 @@ struct instance {
   struct net_info *net_info;
   struct grid *grids;
   int starting_level;
+
+  int num_controllers;
+  SDL_Joystick *controllers[MAX_NUM_PLAYERS];
+  
 };
 
 char instance_init(struct instance *instance);

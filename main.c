@@ -2,6 +2,7 @@
 #include "game.h"
 #include "instance.h"
 #include "net.h"
+#include "input.h"
 #include "menu.h"
 #include "SDL.h"
 #include "SDL_net.h"
@@ -17,7 +18,7 @@ int main(int argc, char **argv) {
   SDL_TimerID timer_id;
 
   // init SDL and all that jazz
-  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) == -1) {
+  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK) == -1) {
     fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
     exit(1);
   }
@@ -33,7 +34,12 @@ int main(int argc, char **argv) {
   }
 
   if (!instance_init(&new_instance)) {
-    fprintf(stderr, "error initializing instance\n");
+    fprintf(stderr, "Error initializing the instance.\n");
+    exit(1);
+  }
+
+  if (!input_init(&new_instance)) {
+    fprintf(stderr, "Error initializing the input handling.\n");
     exit(1);
   }
 
@@ -47,6 +53,8 @@ int main(int argc, char **argv) {
 
   SDL_RemoveTimer(timer_id);
   SDL_DestroyCond(sync_condition);
+
+  input_cleanup(&new_instance);
 
   TTF_Quit();
   SDLNet_Quit();

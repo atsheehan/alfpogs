@@ -35,7 +35,7 @@ struct net_info {
   unsigned int time;
 };
 
-enum input_event {
+enum net_input_event {
   NULL_ID = 0,
   MOVE_LEFT_ID = 1,
   MOVE_RIGHT_ID = 2,

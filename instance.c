@@ -31,6 +31,9 @@ char instance_init(struct instance *instance) {
   instance->net_info = 0;
   instance->grids = 0;
 
+  // this will be initialized with the input
+  instance->num_controllers = 0;
+
   return 1;
 }
 

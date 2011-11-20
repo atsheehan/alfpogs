@@ -1,7 +1,8 @@
 #ifndef MENU_H
 #define MENU_H
 
-#include "SDL.h"
+/* Forward declaration, defined in input.h. */
+enum input_event;
 
 #define HOST_NAME_SIZE 50
 
@@ -18,7 +19,7 @@ struct menu_entry {
   char *name;
   char *content;
   int content_size;
-  void (*handler)(struct menu_entry *entry, struct instance *instance, SDLKey key);
+  void (*handler)(struct menu_entry *entry, struct instance *instance, enum input_event event);
 };
 
 struct menu_page {
@@ -38,6 +39,6 @@ void menu_destroy(struct menu *menu);
 
 void menu_next_entry(struct menu *menu);
 void menu_prev_entry(struct menu *menu);
-void menu_handle_input(struct menu *menu, struct instance *instance, SDLKey key);
+void menu_handle_input(struct menu *menu, struct instance *instance, enum input_event event);
 
 #endif /* MENU_H */
